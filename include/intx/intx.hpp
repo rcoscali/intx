@@ -1109,10 +1109,8 @@ inline uint256 addmod(const uint256& x, const uint256& y, const uint256& mod) no
     const auto ym = y >= mod ? y % mod : y;
 
     const auto s = add_with_carry(xm, ym);
-    auto sum = s.value;
-    if (s.carry || s.value >= mod)
-        sum -= mod;
-    return sum;
+    const auto t = sub_with_carry(s.value, mod);
+    return s.carry || !t.carry ? t.value : s.value;
 }
 
 inline uint256 mulmod(const uint256& x, const uint256& y, const uint256& mod) noexcept
