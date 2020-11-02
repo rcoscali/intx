@@ -1105,16 +1105,14 @@ constexpr uint<N>& operator>>=(uint<N>& x, const T& y) noexcept
 
 inline uint256 addmod(const uint256& x, const uint256& y, const uint256& mod) noexcept
 {
-    const auto s = add_with_carry(x, y);
-    if (x < mod && y < mod)
-    {
-        auto sum = s.value;
-        if (s.carry || s.value >= mod)
-            sum -= mod;
-        return sum;
-    }
+    const auto xm = x >= mod ? x % mod : x;
+    const auto ym = y >= mod ? y % mod : y;
 
-    return (uint512{s.carry, s.value} % mod).lo;
+    const auto s = add_with_carry(xm, ym);
+    auto sum = s.value;
+    if (s.carry || s.value >= mod)
+        sum -= mod;
+    return sum;
 }
 
 inline uint256 mulmod(const uint256& x, const uint256& y, const uint256& mod) noexcept
