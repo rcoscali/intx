@@ -1108,6 +1108,13 @@ inline uint256 addmod(const uint256& x, const uint256& y, const uint256& mod) no
     const auto s = add_with_carry(x, y);
     if (!s.carry)
     {
+        if (x < mod && y < mod)
+        {
+            if (s.value >= mod)
+                return s.value - mod;
+            else
+                return s.value;
+        }
         return s.value % mod;
     }
 
