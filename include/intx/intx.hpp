@@ -1120,8 +1120,7 @@ inline uint256 addmod(const uint256& x, const uint256& y, const uint256& mod) no
 
     if (x < mod && y < mod)
     {
-        const auto sum = uint512{s.carry, s.value};
-        return (sum - mod).lo;
+        return s.value - mod;
     }
 
     return (uint512{s.carry, s.value} % mod).lo;
