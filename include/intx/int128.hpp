@@ -325,14 +325,19 @@ inline constexpr uint128 operator^(uint128 x, uint128 y) noexcept
 
 inline constexpr uint128 operator<<(uint128 x, uint64_t shift) noexcept
 {
-    return (shift < 64) ?
-               // Find the part moved from lo to hi.
-               // For shift == 0 right shift by (64 - shift) is invalid so
-               // split it into 2 shifts by 1 and (63 - shift).
-               uint128{(x.hi << shift) | ((x.lo >> 1) >> (63 - shift)), x.lo << shift} :
+    // Guarantee "defined" behavior for shifts larger than 128.
+    if (INTX_UNLIKELY(shift >= 128))
+        return 0;
 
-               // Guarantee "defined" behavior for shifts larger than 128.
-               (shift < 128) ? uint128{x.lo << (shift - 64), 0} : 0;
+    if (shift < 64)
+    {
+        // Find the part moved from lo to hi.
+        // For shift == 0 right shift by (64 - shift) is invalid so
+        // split it into 2 shifts by 1 and (63 - shift).
+        return {(x.hi << shift) | ((x.lo >> 1) >> (63 - shift)), x.lo << shift};
+    }
+
+    return {x.lo << (shift - 64), 0};
 }
 
 inline constexpr uint128 operator<<(uint128 x, uint128 shift) noexcept
