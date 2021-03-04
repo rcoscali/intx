@@ -300,28 +300,30 @@ inline Target narrow_cast(const Int& x) noexcept
 }
 
 template <unsigned N>
-inline constexpr uint<N> operator>>(const uint<N>& x, unsigned shift) noexcept
+inline constexpr uint<N> operator>>(const uint<N>& x, uint64_t shift) noexcept
 {
-    constexpr auto half_bits = N / 2;
+    constexpr auto num_bits = N;
+    constexpr auto half_bits = num_bits / 2;
+
+    // Guarantee "defined" behavior for shifts larger than num bits.
+    if (INTX_UNLIKELY(shift >= num_bits))
+        return 0;
 
     if (shift < half_bits)
     {
-        auto hi = x.hi >> shift;
+        const auto hi = x.hi >> shift;
 
         // Find the part moved from hi to lo.
         // To avoid invalid shift left,
         // split them into 2 valid shifts by (lshift - 1) and 1.
-        unsigned lshift = half_bits - shift;
-        auto hi_overflow = (x.hi << (lshift - 1)) << 1;
-        auto lo_part = x.lo >> shift;
-        auto lo = lo_part | hi_overflow;
+        const auto lshift = half_bits - shift;
+        const auto hi_overflow = (x.hi << (lshift - 1)) << 1;
+        const auto lo_part = x.lo >> shift;
+        const auto lo = lo_part | hi_overflow;
         return {hi, lo};
     }
 
-    if (shift < num_bits(x))
-        return {0, x.hi >> (shift - half_bits)};
-
-    return 0;
+    return {0, x.hi >> (shift - half_bits)};
 }
 
 
@@ -329,19 +331,20 @@ template <unsigned N, typename T,
     typename = typename std::enable_if<std::is_convertible<T, uint<N>>::value>::type>
 inline constexpr uint<N> operator<<(const uint<N>& x, const T& shift) noexcept
 {
-    // TODO: Rework 0 condition
-    if (shift < T{sizeof(x) * 8})
-        return x << static_cast<uint64_t>(shift);
-    return 0;
+    if (INTX_UNLIKELY(shift >= T{sizeof(x) * 8}))
+        return 0;
+
+    return x << static_cast<uint64_t>(shift);
 }
 
 template <unsigned N, typename T,
     typename = typename std::enable_if<std::is_convertible<T, uint<N>>::value>::type>
 inline constexpr uint<N> operator>>(const uint<N>& x, const T& shift) noexcept
 {
-    if (shift < T{sizeof(x) * 8})
-        return x >> static_cast<unsigned>(shift);
-    return 0;
+    if (INTX_UNLIKELY(shift >= T{sizeof(x) * 8}))
+        return 0;
+
+    return x >> static_cast<uint64_t>(shift);
 }
 
 template <unsigned N>
