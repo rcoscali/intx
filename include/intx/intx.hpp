@@ -261,10 +261,14 @@ inline constexpr uint<N> operator~(const uint<N>& x) noexcept
 }
 
 template <unsigned N>
-inline constexpr uint<N> operator<<(const uint<N>& x, unsigned shift) noexcept
+inline constexpr uint<N> operator<<(const uint<N>& x, uint64_t shift) noexcept
 {
     constexpr auto num_bits = N;
     constexpr auto half_bits = num_bits / 2;
+
+    // Guarantee "defined" behavior for shifts larger than num bits.
+    if (INTX_UNLIKELY(shift >= num_bits))
+        return 0;
 
     if (shift < half_bits)
     {
@@ -280,12 +284,7 @@ inline constexpr uint<N> operator<<(const uint<N>& x, unsigned shift) noexcept
         return {hi, lo};
     }
 
-    // This check is only needed if we want "defined" behavior for shifts
-    // larger than size of the Int.
-    if (shift < num_bits)
-        return {x.lo << (shift - half_bits), 0};
-
-    return 0;
+    return {x.lo << (shift - half_bits), 0};
 }
 
 template <typename Target>
@@ -330,8 +329,9 @@ template <unsigned N, typename T,
     typename = typename std::enable_if<std::is_convertible<T, uint<N>>::value>::type>
 inline constexpr uint<N> operator<<(const uint<N>& x, const T& shift) noexcept
 {
+    // TODO: Rework 0 condition
     if (shift < T{sizeof(x) * 8})
-        return x << static_cast<unsigned>(shift);
+        return x << static_cast<uint64_t>(shift);
     return 0;
 }
 
