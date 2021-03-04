@@ -337,9 +337,10 @@ inline constexpr uint128 operator<<(uint128 x, uint64_t shift) noexcept
 
 inline constexpr uint128 operator<<(uint128 x, uint128 shift) noexcept
 {
-    if (shift < 128)
-        return x << static_cast<uint64_t>(shift);
-    return 0;
+    if (INTX_UNLIKELY(shift.hi != 0))
+        return 0;
+
+    return x << shift.lo;
 }
 
 inline constexpr uint128 operator>>(uint128 x, uint64_t shift) noexcept
@@ -356,9 +357,10 @@ inline constexpr uint128 operator>>(uint128 x, uint64_t shift) noexcept
 
 inline constexpr uint128 operator>>(uint128 x, uint128 shift) noexcept
 {
-    if (shift < 128)
-        return x >> static_cast<uint64_t>(shift);
-    return 0;
+    if (INTX_UNLIKELY(shift.hi != 0))
+        return 0;
+
+    return x >> shift.lo;
 }
 
 
