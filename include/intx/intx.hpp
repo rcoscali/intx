@@ -348,7 +348,7 @@ inline constexpr uint<N> operator>>(const uint<N>& x, const T& shift) noexcept
 }
 
 template <unsigned N>
-inline constexpr uint<N>& operator>>=(uint<N>& x, unsigned shift) noexcept
+inline constexpr uint<N>& operator>>=(uint<N>& x, uint64_t shift) noexcept
 {
     return x = x >> shift;
 }
@@ -391,15 +391,15 @@ inline const uint8_t* as_bytes(const uint<N>& x) noexcept
 /// Implementation of shift left as a loop.
 /// This one is slower than the one using "split" strategy.
 template <unsigned N>
-inline uint<N> shl_loop(const uint<N>& x, unsigned shift)
+inline uint<N> shl_loop(const uint<N>& x, uint64_t shift)
 {
     auto r = uint<N>{};
     constexpr unsigned word_bits = sizeof(uint64_t) * 8;
     constexpr size_t num_words = sizeof(uint<N>) / sizeof(uint64_t);
     auto rw = as_words(r);
     auto words = as_words(x);
-    unsigned s = shift % word_bits;
-    unsigned skip = shift / word_bits;
+    const auto s = shift % word_bits;
+    const auto skip = shift / word_bits;
 
     uint64_t carry = 0;
     for (size_t i = 0; i < (num_words - skip); ++i)
