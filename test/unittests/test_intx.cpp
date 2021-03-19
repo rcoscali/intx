@@ -73,6 +73,18 @@ TEST_F(Uint256Test, add_experimental)
     }
 }
 
+TEST_F(Uint256Test, umul)
+{
+    const auto n = numbers.size();
+    for (size_t i = 0; i < n; ++i)
+    {
+        const auto a = numbers[i];
+        const auto b = numbers[n - 1 - i];
+
+        EXPECT_EQ(umul_loop(a, b),umul(a, b));
+    }
+}
+
 TEST_F(Uint256Test, simple_udiv)
 {
     const char* data_set[][4] = {

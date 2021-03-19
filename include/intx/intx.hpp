@@ -500,7 +500,18 @@ inline uint<2 * N> umul_loop(const uint<N>& x, const uint<N>& y) noexcept
     const auto xw = as_words(x);
     const auto yw = as_words(y);
 
-    for (size_t j = 0; j < num_words; ++j)
+    {
+        uint64_t k = 0;
+        for (size_t i = 0; i < num_words; ++i)
+        {
+            const auto t = umul(xw[i], yw[0]) + k;
+            pw[i] = lo(t);
+            k = hi(t);
+        }
+        pw[num_words] = k;
+    }
+
+    for (size_t j = 1; j < num_words; ++j)
     {
         uint64_t k = 0;
         for (size_t i = 0; i < num_words; ++i)
